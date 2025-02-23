@@ -1,6 +1,8 @@
 package main
 
 import (
+	"FrancoisPoinsot/another_terraform_fmt/pkg"
+
 	"fmt"
 	"os"
 	"path/filepath"
@@ -17,7 +19,7 @@ func main() {
 	// TODO expect terraform init done?
 
 	parser := hclparse.NewParser()
-	root := Module{
+	root := pkg.Module{
 		Name:        "root",
 		PathFromCWD: testModule,
 		Files:       make(map[string]*hcl.File),
@@ -27,6 +29,8 @@ func main() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+
+	root.Print()
 
 	// need module tree here?
 	// not for formating
@@ -44,7 +48,7 @@ func main() {
 // parser act as a cache, so reading a file twice should not be a problem
 //
 // recursively: as in module per module. Not folder per folder
-func ParseModuleRecusrively(parser *hclparse.Parser, currentModule *Module) error {
+func ParseModuleRecusrively(parser *hclparse.Parser, currentModule *pkg.Module) error {
 	err := ParseModule(parser, currentModule)
 	if err != nil {
 		return err
@@ -60,7 +64,7 @@ func ParseModuleRecusrively(parser *hclparse.Parser, currentModule *Module) erro
 	return nil
 }
 
-func ParseModule(parser *hclparse.Parser, currentModule *Module) error {
+func ParseModule(parser *hclparse.Parser, currentModule *pkg.Module) error {
 	// I can ignore all these cases for now, and still have something interesting
 	// case: currentModule is git ref
 	// case: source is relative path, but current module is git
@@ -104,10 +108,10 @@ func ParseModule(parser *hclparse.Parser, currentModule *Module) error {
 
 // search for modules blocks and return a list of those
 // for a single file
-func getModuleChildren(currentModule *Module, hclFile *hcl.File) ([]*Module, error) {
+func getModuleChildren(currentModule *pkg.Module, hclFile *hcl.File) ([]*pkg.Module, error) {
 	// TODO
 
-	return []*Module{
+	return []*pkg.Module{
 		{
 			Name:        "",
 			Source:      "",
@@ -116,18 +120,4 @@ func getModuleChildren(currentModule *Module, hclFile *hcl.File) ([]*Module, err
 			// Child unknown yet at this point
 		},
 	}, nil
-}
-
-type Module struct {
-	Children    []*Module
-	Name        string
-	Source      string
-	PathFromCWD string // may not apply
-	Files       map[string]*hcl.File
-}
-
-// relative to parent
-func (m Module) IsLocal() bool {
-	// TODO definitly not that. Check later
-	return strings.Contains(m.Source, "git")
 }
