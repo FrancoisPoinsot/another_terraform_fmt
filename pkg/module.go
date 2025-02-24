@@ -23,7 +23,7 @@ type Module struct {
 // relative to parent
 func (m *Module) IsLocal() bool {
 	// TODO definitly not that. Check later
-	return strings.Contains(m.Source, "git")
+	return !strings.Contains(m.Source, "git")
 }
 
 // Not super useful.
